@@ -507,11 +507,22 @@
       for (const h of r.querySelectorAll('h1,h2,h3,h4,h5,h6,span,div,p')) {
         if (h.children.length || !SECTION_RE.test((h.textContent || '').trim())) continue;
         if (h.closest('[role="dialog"], dialog, [aria-modal="true"], .cfmod-panel')) continue;
+        // O lápis do próprio feed também mora perto; ficamos com o botão
+        // alinhado na mesma linha do título "Communities".
+        const hr = h.getBoundingClientRect();
+        if (!hr.height) continue;
+        const hy = hr.top + hr.height / 2;
         let box = h.parentElement;
-        for (let i = 0; i < 3 && box; i++, box = box.parentElement) {
-          const b = [...box.querySelectorAll('button')].find((x) =>
-            x !== mini && !x.textContent.trim() && x.querySelector('svg, i, [icon-name]') && x.getClientRects().length);
-          if (b) return b;
+        for (let i = 0; i < 4 && box; i++, box = box.parentElement) {
+          let best = null, bestD = 28;
+          for (const x of box.querySelectorAll('button')) {
+            if (x === mini || x.textContent.trim() || !x.querySelector('svg, i, [icon-name]')) continue;
+            const r = x.getBoundingClientRect();
+            if (!r.height) continue;
+            const d = Math.abs(r.top + r.height / 2 - hy);
+            if (d < bestD) { best = x; bestD = d; }
+          }
+          if (best) return best;
         }
       }
     }
