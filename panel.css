@@ -184,3 +184,13 @@ html.cfmod-lock, html.cfmod-lock body { overflow: hidden !important; }
 @media (prefers-reduced-motion: reduce) {
   .cfmod-overlay, .cfmod-panel, .cfmod-fab, .cfmod-panel *, .cfmod-fab * { transition: none !important; animation: none !important; }
 }
+
+/* Botão "+" ao lado do lápis da seção Communities */
+.cfmod-mini {
+  display: inline-grid; place-items: center; width: 32px; height: 32px; margin-left: 6px;
+  border-radius: 999px; border: 1px solid rgba(238, 141, 73, 0.45);
+  background: rgba(238, 141, 73, 0.12); color: #ee8d49;
+  font: 600 20px/1 system-ui, sans-serif; cursor: pointer; padding: 0; vertical-align: middle;
+  transition: background .2s, border-color .2s;
+}
+.cfmod-mini:hover, .cfmod-mini:focus-visible { background: rgba(238, 141, 73, 0.25); border-color: #ee8d49; outline: none; }

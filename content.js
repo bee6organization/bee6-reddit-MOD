@@ -417,6 +417,29 @@
     fab && fab.classList.remove('is-open');
     if (lastFocus && lastFocus.isConnected) lastFocus.focus();
     lastFocus = null;
+    closeNativeCommunities();
+  }
+
+  // Ao fechar o nosso modal, fecha também o painel nativo "Communities" (o que
+  // abre pelo "Add Communities" / lápis): acha a busca dele e clica no × mais
+  // próximo. A busca fixa da barra lateral não tem ×, então fica intacta.
+  const NATIVE_SEARCH_RE = /search communities|pesquisar comunidades|buscar comunidades/i;
+  const CLOSE_RE = /^(close|fechar|cerrar)/i;
+  function closeNativeCommunities() {
+    for (const r of allRoots()) {
+      for (const inp of r.querySelectorAll('input')) {
+        if (!NATIVE_SEARCH_RE.test(inp.placeholder || inp.getAttribute('aria-label') || '')) continue;
+        if (!inp.getClientRects().length) continue;
+        let node = inp;
+        for (let i = 0; i < 8 && node; i++) {
+          node = node.parentNode instanceof ShadowRoot ? node.parentNode.host : node.parentElement;
+          if (!node || node === document.body) break;
+          const btn = [...node.querySelectorAll('button')].find((b) =>
+            CLOSE_RE.test(b.getAttribute('aria-label') || b.title || b.textContent.trim()));
+          if (btn) { btn.click(); return; }
+        }
+      }
+    }
   }
 
   function onFeedPage() {
@@ -474,6 +497,39 @@
     }
   }
 
+  // Botão "+" ao lado do lápis de editar comunidades (seção "Communities" da
+  // barra lateral do feed). O lápis é só ícone: achamos o título da seção e
+  // pegamos o botão sem texto que mora no mesmo bloco.
+  const SECTION_RE = /^(communities|comunidades)$/i;
+  let mini = null;
+  function findPencil() {
+    for (const r of allRoots()) {
+      for (const h of r.querySelectorAll('h1,h2,h3,h4,h5,h6,span,div,p')) {
+        if (h.children.length || !SECTION_RE.test((h.textContent || '').trim())) continue;
+        if (h.closest('[role="dialog"], dialog, [aria-modal="true"], .cfmod-panel')) continue;
+        let box = h.parentElement;
+        for (let i = 0; i < 3 && box; i++, box = box.parentElement) {
+          const b = [...box.querySelectorAll('button')].find((x) =>
+            x !== mini && !x.textContent.trim() && x.querySelector('svg, i, [icon-name]') && x.getClientRects().length);
+          if (b) return b;
+        }
+      }
+    }
+    return null;
+  }
+
+  function placeMini() {
+    const pencil = findPencil();
+    if (!pencil) { mini && mini.remove(); return; }
+    if (!mini) {
+      mini = el('button', { class: 'cfmod-mini', type: 'button', 'aria-label': T.fabAria, title: T.fab, onclick: (e) => { e.preventDefault(); e.stopPropagation(); panel ? closePanel() : openPanel(); } }, '+');
+    }
+    if (pencil.nextElementSibling !== mini) {
+      ensureStyles(pencil.getRootNode());
+      pencil.after(mini);
+    }
+  }
+
   function syncFab() {
     if (onFeedPage()) {
       if (!fab) {
@@ -493,10 +549,13 @@
         if (panel) fab.classList.add('is-open');
       }
       placeFab();
+      placeMini();
     } else {
       fab && fab.remove();
       fab = null;
       fabAnchor = null;
+      mini && mini.remove();
+      mini = null;
       closePanel();
     }
   }
