@@ -395,14 +395,26 @@
     if (e.key === 'Escape') { e.stopPropagation(); closePanel(); }
   }
 
+  // O modal nativo do Reddit prende o foco dentro dele e engole as teclas,
+  // então o filtro não recebia o texto. Escondemos do Reddit os eventos de
+  // foco e teclado que acontecem dentro do nosso modal.
+  function shieldFocus(e) {
+    const t = e.composedPath ? e.composedPath()[0] : e.target;
+    const rel = e.relatedTarget;
+    if ((overlay && overlay.contains(t)) || (overlay && rel && overlay.contains(rel))) e.stopImmediatePropagation();
+  }
+
   function openPanel() {
     if (panel && panel.isConnected) return;
     lastFocus = document.activeElement;
     panel = buildPanel();
     overlay = el('div', { class: 'cfmod-overlay', onmousedown: (e) => { if (e.target === overlay) closePanel(); } }, panel);
+    for (const t of ['keydown', 'keyup', 'keypress', 'input', 'beforeinput']) overlay.addEventListener(t, (e) => e.stopPropagation());
     document.body.append(overlay);
     document.documentElement.classList.add('cfmod-lock');
     document.addEventListener('keydown', onKey, true);
+    window.addEventListener('focusin', shieldFocus, true);
+    window.addEventListener('focusout', shieldFocus, true);
     fab && fab.classList.add('is-open');
     panel.querySelector('.cfmod-search').focus();
     load(false);
@@ -414,6 +426,8 @@
     panel = null;
     document.documentElement.classList.remove('cfmod-lock');
     document.removeEventListener('keydown', onKey, true);
+    window.removeEventListener('focusin', shieldFocus, true);
+    window.removeEventListener('focusout', shieldFocus, true);
     fab && fab.classList.remove('is-open');
     if (lastFocus && lastFocus.isConnected) lastFocus.focus();
     lastFocus = null;
@@ -538,6 +552,26 @@
     if (pencil.nextElementSibling !== mini) {
       ensureStyles(pencil.getRootNode());
       pencil.after(mini);
+    }
+    // Mesmo tamanho do botão vizinho (lápis ou ×).
+    const r = pencil.getBoundingClientRect();
+    if (r.height) {
+      const sz = Math.round(r.height) + 'px';
+      if (mini.style.height !== sz) {
+        mini.style.width = mini.style.height = sz;
+        mini.style.fontSize = Math.round(r.height * 0.6) + 'px';
+      }
+    }
+    // No modal "Communities" o × é posicionado absoluto; o "+" segue a mesma
+    // linha dele em vez de cair para baixo no fluxo.
+    const pos = getComputedStyle(pencil).position;
+    if (pos === 'absolute' || pos === 'fixed') {
+      mini.style.position = pos;
+      mini.style.top = pencil.offsetTop + 'px';
+      mini.style.left = (pencil.offsetLeft + pencil.offsetWidth + 6) + 'px';
+      mini.style.margin = '0';
+    } else {
+      mini.style.position = mini.style.top = mini.style.left = mini.style.margin = '';
     }
   }
 
