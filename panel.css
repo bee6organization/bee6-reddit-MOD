@@ -1,0 +1,186 @@
+/* Reddit-CFMod — estética bee6 (Liquid Glass, sempre escuro).
+   Fontes: a pilha pede Archivo/Staatliches se já estiverem instaladas no sistema
+   e cai em Arial. Não baixamos do Google Fonts para não fazer nenhuma requisição
+   fora do reddit.com (regra de privacidade da extensão). */
+.cfmod-panel, .cfmod-fab {
+  --b6-primary: #ee8d49;
+  --b6-primary-hi: #f4a66d;
+  --b6-secondary: #b8364f;
+  --b6-accent: #396e82;
+  --b6-bg: #000000;
+  --b6-text: #d5d5ce;
+  --b6-muted: rgba(213, 213, 206, 0.62);
+  --b6-line: rgba(255, 255, 255, 0.09);
+  --b6-line-hi: rgba(255, 255, 255, 0.16);
+  --b6-glass: rgba(255, 255, 255, 0.04);
+  --b6-glass-hi: rgba(255, 255, 255, 0.07);
+  --b6-ok: #7fc8a0;
+  --b6-err: #f08a9c;
+  --font-display: 'Staatliches', Arial, sans-serif;
+  --font-body: 'Archivo', Arial, sans-serif;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  font-family: var(--font-body);
+}
+
+/* ---------- botão flutuante ---------- */
+/* Disco de vidro escuro; o favo laranja é o único ponto de cor. */
+.cfmod-fab {
+  position: fixed; right: 20px; bottom: 20px; z-index: 2147483646;
+  display: flex; align-items: center; gap: 0;
+  height: 54px; padding: 0 15px; border-radius: 27px;
+  border: 1px solid var(--b6-line-hi);
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.10), rgba(255,255,255,.02) 45%, transparent),
+    rgba(8, 8, 8, 0.78);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  color: var(--b6-primary); cursor: pointer; overflow: hidden;
+  box-shadow: 0 10px 30px -8px rgba(238, 141, 73, 0.45), 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: gap .3s var(--ease), padding .3s var(--ease), box-shadow .3s ease, transform .2s ease, border-color .3s ease;
+}
+.cfmod-fab-ico { position: relative; display: grid; place-items: center; width: 24px; height: 24px; flex: none; }
+.cfmod-fab-ico svg { overflow: visible; }
+.cfmod-fab-ico .hex { fill: rgba(238, 141, 73, 0.12); }
+.cfmod-fab-ico .l1, .cfmod-fab-ico .l3 { transition: transform .3s var(--ease); }
+.cfmod-fab-plus {
+  position: absolute; right: -7px; top: -6px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--b6-primary); color: var(--b6-bg);
+  font: 700 12px/14px Arial, sans-serif; text-align: center;
+  box-shadow: 0 0 0 2px #0a0a0a; transition: transform .3s var(--ease), background .3s ease;
+}
+.cfmod-fab-label {
+  max-width: 0; opacity: 0; white-space: nowrap; color: var(--b6-text);
+  font: 700 14px/1 var(--font-body); letter-spacing: .01em;
+  transition: max-width .3s var(--ease), opacity .25s ease;
+}
+.cfmod-fab:hover, .cfmod-fab:focus-visible {
+  gap: 10px; padding: 0 18px 0 15px; transform: translateY(-2px);
+  border-color: rgba(238, 141, 73, 0.45);
+  box-shadow: 0 14px 36px -8px rgba(238, 141, 73, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+.cfmod-fab:hover .cfmod-fab-label, .cfmod-fab:focus-visible .cfmod-fab-label { max-width: 200px; opacity: 1; }
+.cfmod-fab:hover .l1 { transform: translateY(-1.5px); }
+.cfmod-fab:hover .l3 { transform: translateY(1.5px); }
+.cfmod-fab:active { transform: scale(.97); }
+.cfmod-fab.is-open { border-color: rgba(238, 141, 73, 0.55); box-shadow: 0 0 0 4px rgba(238, 141, 73, 0.18), 0 4px 12px rgba(0, 0, 0, 0.5); }
+.cfmod-fab.is-open .cfmod-fab-plus { transform: rotate(135deg); background: var(--b6-text); }
+
+/* Variante encaixada ao lado do botão nativo do Reddit: mesma altura (40px),
+   rótulo sempre visível, mesmo vidro escuro e favo laranja. */
+.cfmod-fab.is-inline {
+  position: relative; right: auto; bottom: auto; z-index: auto;
+  display: inline-flex; vertical-align: middle; flex: none;
+  height: 40px; gap: 8px; padding: 0 16px 0 12px; margin-left: 8px; border-radius: 20px;
+  box-shadow: 0 6px 18px -8px rgba(238, 141, 73, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.cfmod-fab.is-inline .cfmod-fab-ico { width: 20px; height: 20px; }
+.cfmod-fab.is-inline .cfmod-fab-ico svg { width: 20px; height: 20px; }
+.cfmod-fab.is-inline .cfmod-fab-plus { width: 12px; height: 12px; font-size: 10px; line-height: 12px; right: -6px; top: -5px; }
+.cfmod-fab.is-inline .cfmod-fab-label { max-width: none; opacity: 1; font-size: 14px; }
+.cfmod-fab.is-inline:hover, .cfmod-fab.is-inline:focus-visible { gap: 8px; padding: 0 16px 0 12px; transform: translateY(-1px); }
+
+/* ---------- painel ---------- */
+/* Glass card da bee6: fundo quase preto translúcido, blur forte, borda clara sutil. */
+/* Fundo do modal: escurece e desfoca o Reddit atrás, como o modal nativo. */
+.cfmod-overlay {
+  position: fixed; inset: 0; z-index: 2147483647;
+  display: flex; align-items: center; justify-content: center; padding: 32px 16px;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  animation: cfmod-fade .2s ease;
+}
+@keyframes cfmod-fade { from { opacity: 0; } }
+html.cfmod-lock, html.cfmod-lock body { overflow: hidden !important; }
+
+.cfmod-panel {
+  position: relative;
+  width: 560px; max-width: 100%; height: min(680px, calc(100vh - 64px));
+  display: flex; flex-direction: column;
+  color: var(--b6-text); font-size: 14px; font-weight: 300;
+  background:
+    radial-gradient(140% 60% at 100% 0%, rgba(238, 141, 73, 0.10), transparent 60%),
+    radial-gradient(120% 50% at 0% 100%, rgba(57, 110, 130, 0.14), transparent 60%),
+    rgba(6, 6, 6, 0.86);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  border: 1px solid var(--b6-line-hi); border-radius: 18px;
+  box-shadow: 0 24px 60px -12px rgba(238, 141, 73, 0.22), 0 8px 32px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  animation: cfmod-in .3s var(--ease);
+}
+@keyframes cfmod-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+
+.cfmod-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px 12px; border-bottom: 1px solid var(--b6-line); }
+.cfmod-title { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.cfmod-brand { font-family: var(--font-display); font-size: 22px; letter-spacing: .06em; color: var(--b6-primary); line-height: 1; }
+.cfmod-feedname { color: var(--b6-muted); font-weight: 700; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cfmod-x { background: var(--b6-glass); border: 1px solid var(--b6-line); color: var(--b6-text); width: 30px; height: 30px; font-size: 18px; line-height: 1; cursor: pointer; border-radius: 50%; transition: border-color .3s ease, color .3s ease; }
+.cfmod-x:hover { border-color: var(--b6-primary); color: var(--b6-primary); }
+
+.cfmod-status { padding: 0 16px; font-size: 13px; }
+.cfmod-status:not(:empty) { padding: 9px 16px; border-bottom: 1px solid var(--b6-line); background: var(--b6-glass); }
+.cfmod-status[data-kind="ok"] { color: var(--b6-ok); }
+.cfmod-status[data-kind="err"] { color: var(--b6-err); }
+.cfmod-status[data-kind="warn"] { color: var(--b6-primary); }
+
+.cfmod-sec { display: flex; flex-direction: column; min-height: 0; max-height: 32%; border-bottom: 1px solid var(--b6-line); }
+.cfmod-sec.cfmod-grow { flex: 1; max-height: none; border-bottom: 0; }
+.cfmod-sec h3 { margin: 0; padding: 12px 16px 6px; font: 700 11px/1.2 var(--font-body); text-transform: uppercase; letter-spacing: .08em; color: var(--b6-muted); }
+.cfmod-count { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: rgba(57, 110, 130, 0.35); color: var(--b6-text); font-weight: 700; letter-spacing: 0; }
+
+.cfmod-tools { display: flex; gap: 10px; align-items: center; padding: 2px 16px 10px; }
+.cfmod-search { flex: 1; min-width: 0; padding: 8px 12px; border: 1px solid var(--b6-line); border-radius: 999px; background: var(--b6-glass); color: var(--b6-text); font: 300 14px var(--font-body); transition: border-color .3s ease; }
+.cfmod-search::placeholder { color: var(--b6-muted); }
+.cfmod-search:focus { outline: none; border-color: var(--b6-primary); }
+.cfmod-all { font-size: 12px; color: var(--b6-muted); white-space: nowrap; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+
+.cfmod-panel input[type="checkbox"] { accent-color: var(--b6-primary); width: 15px; height: 15px; margin: 0; flex: none; cursor: pointer; }
+
+.cfmod-list { list-style: none; margin: 0; padding: 0 8px 8px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(213,213,206,.2) transparent; }
+.cfmod-list li { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px; border: 1px solid transparent; transition: background .2s ease, border-color .2s ease; }
+.cfmod-list li:hover { background: var(--b6-glass-hi); border-color: var(--b6-line); }
+.cfmod-list label { display: flex; align-items: center; gap: 10px; width: 100%; cursor: pointer; }
+.cfmod-list li:has(input:checked) { background: rgba(238, 141, 73, 0.08); border-color: rgba(238, 141, 73, 0.25); }
+.cfmod-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
+.cfmod-meta { color: var(--b6-muted); font-size: 12px; }
+.cfmod-empty { color: var(--b6-muted); font-style: italic; }
+.cfmod-ico { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex: none; border: 1px solid var(--b6-line); }
+.cfmod-ico-blank { display: inline-grid; place-items: center; background: rgba(57, 110, 130, 0.3); color: var(--b6-text); font-size: 9px; font-weight: 700; }
+.cfmod-rm { background: none; border: 1px solid var(--b6-line-hi); color: var(--b6-muted); width: 26px; height: 26px; border-radius: 50%; cursor: pointer; line-height: 1; flex: none; transition: border-color .3s ease, color .3s ease; }
+.cfmod-rm:hover { border-color: var(--b6-secondary); color: var(--b6-err); }
+
+.cfmod-foot { border-top: 1px solid var(--b6-line); background: rgba(0, 0, 0, 0.35); }
+.cfmod-actions { display: flex; gap: 8px; padding: 12px 16px 10px; }
+.cfmod-refresh { background: var(--b6-glass); border: 1px solid var(--b6-line-hi); color: var(--b6-text); border-radius: 999px; width: 40px; cursor: pointer; font-size: 16px; transition: border-color .3s ease, color .3s ease; }
+.cfmod-refresh:hover { border-color: var(--b6-primary); color: var(--b6-primary); }
+/* CTA: laranja bee6 com texto preto (contraste 8.9:1). */
+.cfmod-add {
+  flex: 1; padding: 10px 14px; border: 0; border-radius: 999px; cursor: pointer;
+  background: linear-gradient(180deg, var(--b6-primary-hi), var(--b6-primary));
+  color: #000; font: 700 14px var(--font-body);
+  box-shadow: 0 6px 18px -6px rgba(238, 141, 73, 0.7);
+  transition: transform .2s ease, box-shadow .3s ease, opacity .3s ease;
+}
+.cfmod-add:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 24px -6px rgba(238, 141, 73, 0.85); }
+.cfmod-add:disabled { opacity: .35; cursor: default; box-shadow: none; }
+
+.cfmod-credit {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 0 16px 12px; font-size: 12px; color: var(--b6-muted); text-decoration: none;
+  transition: color .3s ease;
+}
+.cfmod-bee6 { display: inline-flex; align-items: center; gap: 3px; color: var(--b6-primary); font-family: var(--font-display); font-size: 15px; letter-spacing: .05em; line-height: 1; }
+.cfmod-credit:hover { color: var(--b6-text); }
+.cfmod-credit:hover .cfmod-bee6 { color: var(--b6-primary-hi); }
+
+.cfmod-panel button:focus-visible, .cfmod-panel input:focus-visible, .cfmod-panel a:focus-visible, .cfmod-fab:focus-visible {
+  outline: 2px solid var(--b6-primary); outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .cfmod-overlay { padding: 12px 8px; }
+  .cfmod-panel { height: calc(100vh - 24px); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cfmod-overlay, .cfmod-panel, .cfmod-fab, .cfmod-panel *, .cfmod-fab * { transition: none !important; animation: none !important; }
+}
