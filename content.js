@@ -439,21 +439,32 @@
   // próximo. A busca fixa da barra lateral não tem ×, então fica intacta.
   const NATIVE_SEARCH_RE = /search communities|pesquisar comunidades|buscar comunidades/i;
   const CLOSE_RE = /^(close|fechar|cerrar)/i;
+  // O × do Reddit pode não ter rótulo de texto e morar em shadow DOM; então
+  // olhamos rótulo, title e nome do ícone, em todos os roots, e ficamos com o
+  // × visível mais perto (acima/ao lado) do campo de busca do modal nativo.
+  function isCloseBtn(b) {
+    const lbl = [b.getAttribute('aria-label'), b.title, b.textContent.trim()].join(' ');
+    if (/close|fechar|cerrar|fermer|dismiss/i.test(lbl)) return true;
+    return !!b.querySelector('[icon-name*="close" i], [name*="close" i], svg[class*="close" i]');
+  }
   function closeNativeCommunities() {
-    for (const r of allRoots()) {
-      for (const inp of r.querySelectorAll('input')) {
-        if (!NATIVE_SEARCH_RE.test(inp.placeholder || inp.getAttribute('aria-label') || '')) continue;
-        if (!inp.getClientRects().length) continue;
-        let node = inp;
-        for (let i = 0; i < 8 && node; i++) {
-          node = node.parentNode instanceof ShadowRoot ? node.parentNode.host : node.parentElement;
-          if (!node || node === document.body) break;
-          const btn = [...node.querySelectorAll('button')].find((b) =>
-            CLOSE_RE.test(b.getAttribute('aria-label') || b.title || b.textContent.trim()));
-          if (btn) { btn.click(); return; }
-        }
+    const roots = allRoots();
+    const inputs = [];
+    for (const r of roots) for (const inp of r.querySelectorAll('input'))
+      if (NATIVE_SEARCH_RE.test(inp.placeholder || inp.getAttribute('aria-label') || '') && inp.getClientRects().length) inputs.push(inp.getBoundingClientRect());
+    if (!inputs.length) return;
+    let best = null, bestD = 160;
+    for (const r of roots) for (const b of r.querySelectorAll('button')) {
+      if (b === mini || b.closest('.cfmod-overlay') || !isCloseBtn(b)) continue;
+      const br = b.getBoundingClientRect();
+      if (!br.height) continue;
+      for (const ir of inputs) {
+        if (br.left > ir.right + 60 || br.right < ir.left) continue;
+        const d = Math.abs(ir.top - br.bottom);
+        if (br.top <= ir.bottom && d < bestD) { best = b; bestD = d; }
       }
     }
+    if (best) best.click();
   }
 
   function onFeedPage() {
@@ -562,17 +573,22 @@
         mini.style.fontSize = Math.round(r.height * 0.6) + 'px';
       }
     }
-    // No modal "Communities" o × é posicionado absoluto; o "+" segue a mesma
-    // linha dele em vez de cair para baixo no fluxo.
+    // Alinha o centro vertical do "+" ao do botão vizinho, seja qual for o
+    // layout do Reddit ali (flex, absoluto, etc.).
     const pos = getComputedStyle(pencil).position;
     if (pos === 'absolute' || pos === 'fixed') {
       mini.style.position = pos;
-      mini.style.top = pencil.offsetTop + 'px';
       mini.style.left = (pencil.offsetLeft + pencil.offsetWidth + 6) + 'px';
+      mini.style.top = pencil.offsetTop + 'px';
       mini.style.margin = '0';
     } else {
-      mini.style.position = mini.style.top = mini.style.left = mini.style.margin = '';
+      mini.style.position = mini.style.top = mini.style.left = '';
+      mini.style.margin = '0 0 0 6px';
     }
+    mini.style.transform = '';
+    const pr = pencil.getBoundingClientRect(), mr = mini.getBoundingClientRect();
+    const dy = Math.round((pr.top + pr.height / 2) - (mr.top + mr.height / 2));
+    if (dy) mini.style.transform = `translateY(${dy}px)`;
   }
 
   function syncFab() {
